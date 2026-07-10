@@ -6,6 +6,9 @@ from src.api.router import api_router
 from src.core.container import create_async_container
 
 
+from src.core.config import settings
+
+
 def create_app() -> FastAPI:
     """
     Создание и конфигурация FastAPI приложения.
@@ -13,12 +16,11 @@ def create_app() -> FastAPI:
     """
     app = FastAPI(title="File Exchange MVP")
 
+    #TODO Предусмотреть этот факт при деплое приложения
+    origins = settings.CORS_ORIGINS_DEV + settings.CORS_ORIGINS_PROD
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-        ],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
