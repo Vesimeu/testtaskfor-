@@ -1,14 +1,20 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Boolean, DateTime, Integer, JSON, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.models.base import Base
 
-class Base(DeclarativeBase):
-    pass
+if TYPE_CHECKING:
+    from src.models.alert import Alert
 
 
 class StoredFile(Base):
+    """
+    Модель для хранения информации о загруженном файле.
+    Решает задачу отслеживания метаданных файлов, статусов проверки и связи с алертами.
+    """
     __tablename__ = "files"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -34,16 +40,8 @@ class StoredFile(Base):
         nullable=False,
     )
 
-
-class Alert(Base):
-    __tablename__ = "alerts"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    file_id: Mapped[str] = mapped_column(String(36), ForeignKey("files.id"), nullable=False)
-    level: Mapped[str] = mapped_column(String(50), nullable=False)
-    message: Mapped[str] = mapped_column(String(500), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        nullable=False,
+    alerts: Mapped[list["Alert"]] = relationship(
+        "Alert",
+        back_populates="file",
+        cascade="all, delete-orphan",
     )
